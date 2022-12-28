@@ -1,12 +1,12 @@
 import nextcord
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+import requests
 from nextcord.ext import commands
 import re
 import string
 import nltk
-model = keras.models.load_model("cf-python/model")
+from dotenv import load_dotenv
+load_dotenv()
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 web_address = re.compile(r"(?i)http(s):\/\/[a-z0-9.~_\-\/]+")
@@ -33,9 +33,13 @@ async def on_message(message):
     if message.author == bot:
         return
     else:
-        tester = list(clean(message.content))
+        url = 'http://localhost:8501/1/models/model:predict'
+        tester = [clean(message.content)]
+        data = {"instances":tester}
+        response = requests.get(url, data=data,headers={})["predictions"]
+        print('test: your score is ', response)
         #tester is the thing put into the dataset
-        print(model.predict(tester))
+        await message.channel.send('test: your score is ', response)
 
 class MyClient(nextcord.Client):
     async def on_message(self, message):
@@ -44,4 +48,4 @@ class MyClient(nextcord.Client):
 
         if message.content.startswith('$hello'):
             await message.channel.send('Hello World!')   
-bot.run('OTk1NTA3NzQyNzY2Nzk3MDAw.GpIm-C.RE9tOEVfBE7cGKankkzizWELglf5ioZ9HoilBI')
+bot.run("TOKEN")
